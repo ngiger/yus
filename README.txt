@@ -24,6 +24,10 @@ software packages.
 
 * sudo gem install yus
 
+== TEST/COVERAGE
+
+* gem install bundler && bundle install && ruby test/suite.rb
+
 == DEVELOPERS:
 
 * Masaomi Hatakeyama

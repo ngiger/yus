@@ -92,7 +92,7 @@ module Yus
       entity = authenticate(name, passhash)
       entity.login(domain)
       @persistence.save_entity(entity)
-      timeout = entity.get_preference("session_timeout", domain) \
+      entity.get_preference("session_timeout", domain) \
         || @config.session_timeout
       EntitySession.new(@needle, entity, domain)
     end

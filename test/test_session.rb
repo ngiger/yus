@@ -220,15 +220,22 @@ module Yus
     end
   end
   class TestEntitySession < Minitest::Test
+    HexDigestSample = 'cleartext'
     def setup
-      @config = FlexMock.new
+      @config = FlexMock.new('config')
       @config.should_receive(:session_timeout).and_return { 0.5 }
-      @user = FlexMock.new
-      @persistence = FlexMock.new
-      @logger = FlexMock.new
+      @config.should_receive(:token_lifetime).and_return { 0.2 }
+      @digest = FlexMock.new('digest')
+      @digest.should_receive(:hexdigest).and_return { HexDigestSample }
+      @config.should_receive(:digest).by_default.and_return {@digest}
+      @user = FlexMock.new('user')
+      @user.should_receive(:set_token).and_return { 'set_token' }
+      @persistence = FlexMock.new('persistence')
+      @persistence.should_receive(:save_entity)
+      @logger = FlexMock.new('logger')
       @logger.should_receive(:info).and_return {}
       @logger.should_receive(:debug).and_return {}
-      @needle = FlexMock.new
+      @needle = FlexMock.new('needle')
       @needle.should_receive(:persistence).and_return { @persistence }
       @needle.should_receive(:config).and_return { @config }
       @needle.should_receive(:logger).and_return { @logger }
@@ -282,6 +289,10 @@ module Yus
       assert_raises(DuplicateNameError) {
         @session.create_entity('name')
       }
+    end
+    def test_generate_token
+      assert_equal(false, @session.expired?)
+      assert_equal(HexDigestSample, @session.generate_token)
     end
     def test_destroy
       assert_equal(false, @session.expired?)
@@ -428,7 +439,7 @@ module Yus
       }
     end
     def test_set_password__success
-      entity = FlexMock.new
+      entity = FlexMock.new('entity')
       @persistence.should_receive(:find_entity).and_return { |name|
         assert_equal('username', name)
         entity

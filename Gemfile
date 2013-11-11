@@ -19,6 +19,7 @@ group :development, :test do
   gem 'flexmock'
   gem 'rake'
   gem 'minitest', '>=5.0.0'
+  gem 'simplecov'
   gem 'hoe'
 end
 

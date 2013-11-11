@@ -14,26 +14,21 @@ module Yus
   class Session
     include DRb::DRbUndumped
     attr_accessor :persistence
-    
+    Config = Struct.new("Config", :session_timeout, :digest, :token_lifetime, :root_name)    #=> Struct::Config
     def initialize(needle)
       @needle = needle
-      if needle and needle.config 
+      if needle and needle.config
         @config =  needle.config
         @timeout = needle.config.session_timeout
         @persistence = needle.persistence
       else
-        @config  = nil
+        @config  = Config.new(60, 1, 3, 'dummy_root_name')
         @timeout = 0.1
         @persistence = nil
       end
       @mutex = Mutex.new
       @logger = nil
       touch!
-    end
-    
-    # backwards compatiblity (as we dropped using the needle gem)
-    def needle
-      self
     end
     
     def affiliate(name, groupname)
