@@ -1,7 +1,5 @@
 source "http://rubygems.org"
 
-gem 'needle'
-#gem 'pg', '0.9.0'
 gem 'pg'
 # we have some important patches here!!
 gem 'dbi', '0.4.5', :git => 'https://github.com/zdavatz/ruby-dbi'
@@ -23,5 +21,5 @@ group :development, :test do
 end
 
 group :development do
-  gem 'pry-debugger'
+  gem 'pry-debugger', :platforms => [:ruby_19, :ruby_20]
 end

@@ -13,12 +13,29 @@ end
 module Yus
   class Session
     include DRb::DRbUndumped
+    attr_accessor :persistence
+    
     def initialize(needle)
       @needle = needle
-      @timeout = needle.config.session_timeout
+      if needle and needle.config 
+        @config =  needle.config
+        @timeout = needle.config.session_timeout
+        @persistence = needle.persistence
+      else
+        @config  = nil
+        @timeout = 0.1
+        @persistence = nil
+      end
       @mutex = Mutex.new
+      @logger = nil
       touch!
     end
+    
+    # backwards compatiblity (as we dropped using the needle gem)
+    def needle
+      self
+    end
+    
     def affiliate(name, groupname)
       info("affiliate(name=#{name}, group=#{groupname})")
       @mutex.synchronize { 
@@ -35,13 +52,13 @@ module Yus
       entity = nil
       @mutex.synchronize { 
         allow_or_fail('edit', 'yus.entities')
-        if(@needle.persistence.find_entity(name))
+        if(@persistence.find_entity(name))
           debug("create_entity: Duplicate Name: '#{name}'")
           raise DuplicateNameError, "Duplicate name: #{name}"
         end
         entity = Entity.new(name, valid_until, valid_from)
         entity.grant('set_password', name)
-        @needle.persistence.add_entity(entity)
+        @persistence.add_entity(entity)
       }
       touch!
       entity
@@ -49,12 +66,12 @@ module Yus
     def delete_entity(name)
       info("delete_entity(name=#{name})")
       allow_or_fail 'edit', 'yus.entities'
-      entity = find_or_fail name
-      @needle.persistence.delete_entity name
+      find_or_fail name
+      @persistence.delete_entity name
       touch!
     end
     def destroy!
-      @needle = @user = nil
+      @persistence = @needle = @user = nil
       @timeout = -1
     end
     def disaffiliate(name, groupname)
@@ -63,9 +80,6 @@ module Yus
         allow_or_fail('edit', 'yus.entities')
         user = find_or_fail(name)
         group = find_or_fail(groupname)
-        puts group.inspect
-        puts user.leave(group).inspect
-        puts user.inspect
         save(user, group)
       }
       touch!
@@ -76,12 +90,12 @@ module Yus
     def entities
       allow_or_fail('edit', 'yus.entities')
       touch!
-      @needle.persistence.entities
+      @persistence.entities
     end
     def find_entity(name)
       allow_or_fail('edit', 'yus.entities')
       touch!
-      @needle.persistence.find_entity(name)
+      @persistence.find_entity(name)
     end
     def grant(name, action, item=nil, expires=nil)
       info("grant(name=#{name}, action=#{action}, item=#{item}, expires=#{expires})")
@@ -108,7 +122,7 @@ module Yus
       @mutex.synchronize { 
         allow_or_fail('edit', 'yus.entities')
         user = find_or_fail(oldname)
-        if((other = @needle.persistence.find_entity(newname)) && other != user)
+        if((other = @persistence.find_entity(newname)) && other != user)
           raise DuplicateNameError, "Duplicate name: #{newname}"
         end
         user.revoke('set_password', oldname)
@@ -131,7 +145,7 @@ module Yus
       @mutex.synchronize {
         allow_or_fail('set_password', name)
         user = find_or_fail(name)
-        user.passhash = @needle.config.digest.hexdigest(pass)
+        user.passhash = @config.digest.hexdigest(pass) if @config
         save(user)
       }
       touch!
@@ -153,24 +167,25 @@ module Yus
       end
     end
     def debug(message)
-      @needle.logger.debug(self.class) { message }
+      @logger.debug(self.class) { message } if @logger
     end
-    def find_or_fail(name)
-      @needle.persistence.find_entity(name) \
-        or raise UnknownEntityError, "Unknown Entity '#{name}'"
+    def find_or_fail(name='none')
+      raise UnknownEntityError, "Unknown Entity '#{name}'" unless @persistence
+      @persistence.find_entity(name) or raise UnknownEntityError, "Unknown Entity '#{name}'"
     end
     def info(message)
-      @needle.logger.info(self.class) { message }
+      @logger.info(self.class) { message } if @logger
     end
     def save(*args)
       args.each { |entity|
-        @needle.persistence.save_entity(entity)
+        @persistence.save_entity(entity)
       }
     end
     def touch!
       @last_access = Time.now
     end
   end
+  
   class AutoSession < Session
     def initialize(needle, domain)
       @domain = domain
@@ -183,16 +198,16 @@ module Yus
       info("create_entity(name=#{name}, valid_until=#{valid_until}, valid_from=#{valid_from})")
       entity = nil
       @mutex.synchronize { 
-        if(@needle.persistence.find_entity(name))
+        if(@persistence.find_entity(name))
           debug("create_entity: Duplicate Name: '#{name}'")
           raise DuplicateNameError, "Duplicate name: #{name}"
         end
         entity = Entity.new(name, valid_until, valid_from)
         entity.grant('set_password', name)
-        if(pass)
-          entity.passhash = @needle.config.digest.hexdigest(pass)
+        if(pass and @config)
+          entity.passhash = @config.digest.hexdigest(pass)
         end
-        @needle.persistence.add_entity(entity)
+        @persistence.add_entity(entity)
       }
       touch!
     end
@@ -220,7 +235,7 @@ module Yus
       info("rename(#{oldname}, #{newname})")
       @mutex.synchronize { 
         user = find_or_fail(oldname)
-        if((other = @needle.persistence.find_entity(newname)) && other != user)
+        if((other = @persistence.find_entity(newname)) && other != user)
           raise DuplicateNameError, "Duplicate name: #{newname}"
         end
         user.revoke('set_password', oldname)
@@ -236,7 +251,7 @@ module Yus
         unless(user.allowed?('reset_password', token))
           raise NotPrivilegedError, "You are not privileged to reset #{name}'s password"
         end
-        user.passhash = @needle.config.digest.hexdigest(password)
+        user.passhash = @config.digest.hexdigest(password) if @config
         user.revoke('reset_password', token)
         save(user)
       }
@@ -277,8 +292,8 @@ module Yus
       @user.name
     end
     def generate_token
-      token = @needle.config.digest.hexdigest(rand(2**128).to_s)
-      expires = Time.now + @needle.config.token_lifetime.to_i * 24*60*60
+      token = @config.digest.hexdigest(rand(2**128).to_s)
+      expires = Time.now + @config.token_lifetime.to_i * 24*60*60
       @user.set_token token, expires
       save @user
       token
@@ -322,14 +337,13 @@ module Yus
       true
     end
     def name
-      @needle.config.root_name
+      @config.root_name if @config
     end
     def show(name, recursive=false)
-      require 'pp'
       find_or_fail(name).info(recursive).pretty_inspect
     end
     def valid?
       true
-    end
+    end    
   end
 end

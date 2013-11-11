@@ -23,6 +23,7 @@ module Yus
       @preferences = {}
       @last_logins = {}
       @tokens = {}
+      @passhash = nil
     end
     def allowed?(action, item=:everything)
       valid? &&  privileged?(action, item) \

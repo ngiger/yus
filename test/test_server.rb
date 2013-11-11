@@ -3,6 +3,8 @@
 
 $: << File.expand_path('../lib', File.dirname(__FILE__))
 
+gem "minitest"
+require "minitest/autorun"
 require 'yus/server'
 require 'flexmock'
 
@@ -12,18 +14,18 @@ module Yus
   end
   class TestServer < Minitest::Test
     def setup
-      @config = FlexMock.new
+      @config = FlexMock.new('config')
       @config.should_receive(:cleaner_interval).and_return { 100000000 }
-      digest = FlexMock.new
+      digest = FlexMock.new('digest')
       digest.should_receive(:hexdigest).and_return { |input| input }
       @config.should_receive(:digest).and_return { digest }
       @config.should_receive(:session_timeout).and_return { 0.5 }
       @config.should_receive(:root_name).and_return { 'admin' }
       @config.should_receive(:root_pass).and_return { 'admin' }
-      @logger = FlexMock.new
+      @logger = FlexMock.new('logger')
       @logger.should_receive(:info)
       @logger.should_receive(:debug)
-      @persistence = FlexMock.new
+      @persistence = FlexMock.new('persistence')
       @server = Server.new(@persistence, @config, @logger)
     end
     def test_authenticate__no_user
@@ -35,7 +37,7 @@ module Yus
     end
     def test_authenticate__wrong_password
       @logger.should_receive(:warn).times(1)
-      user = FlexMock.new
+      user = FlexMock.new('user')
       user.should_receive(:authenticate).and_return { false }
       @persistence.should_receive(:find_entity).times(1).and_return { user }
       assert_raises(AuthenticationError) {
@@ -77,8 +79,9 @@ module Yus
       assert_equal([session], @server.instance_variable_get('@sessions'))
     end
     def test_logout
-      needle = FlexMock.new
+      needle = FlexMock.new('needle_logout')
       needle.should_receive(:config).and_return { @config }
+      needle.should_receive(:persistence).and_return { @persistence }      
       @config.should_receive(:session_timeout).and_return { 200 }
       sessions = @server.instance_variable_get('@sessions')
       session = RootSession.new(needle)
@@ -94,9 +97,10 @@ module Yus
       assert(@server.ping)
     end
     def test_clean
-      needle = FlexMock.new
+      needle = FlexMock.new('needle_clean')
       needle.should_receive(:config).and_return { @config }
       @config.should_receive(:session_timeout).and_return { 0.5 }
+      needle.should_receive(:persistence).and_return { @persistence }      
       sessions = @server.instance_variable_get('@sessions')
       session = RootSession.new(needle)
       sessions.push(session)
@@ -107,15 +111,16 @@ module Yus
   end
   class TestServerCleaner < Minitest::Test
     def test_autoclean
-      config = FlexMock.new
+      config = FlexMock.new('config')
       config.should_receive(:cleaner_interval).and_return { 0.5 }
       config.should_receive(:session_timeout).and_return { 0.5 }
-      logger = FlexMock.new
+      logger = FlexMock.new('logger')
       logger.should_receive(:info)
       logger.should_receive(:debug)
-      needle = FlexMock.new
+      needle = FlexMock.new('needle')
       needle.should_receive(:config).and_return { config }
-      persistence = FlexMock.new
+      persistence = FlexMock.new('persistence')
+      needle.should_receive(:persistence).and_return { persistence }
       server = Server.new(persistence, config, logger)
       sessions = server.instance_variable_get('@sessions')
       session = RootSession.new(needle)

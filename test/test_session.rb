@@ -169,7 +169,6 @@ module Yus
         false
       }
       @persistence.should_receive(:find_entity, 1).times(1).and_return { user }
-      res = nil
       assert_raises(NotPrivilegedError) {
         @session.reset_entity_password('name', 'token', 'password')
       }
@@ -795,15 +794,15 @@ module Yus
   end
   class TestRootSession < Minitest::Test
     def setup
-      @config = FlexMock.new
+      @config = FlexMock.new('config')
       @config.should_receive(:session_timeout).and_return { 0.5 }
       @persistence = FlexMock.new
-      @logger = FlexMock.new
+      @logger = FlexMock.new('logger')
       @logger.should_receive(:info).and_return {}
       @logger.should_receive(:debug).and_return {}
-      @needle = FlexMock.new
+      @needle = FlexMock.new('needle')
       @needle.should_receive(:persistence).and_return { @persistence }
-      @needle.should_receive(:config).and_return { @config }
+      @needle.should_receive(:config).and_return { @config }.by_default
       @needle.should_receive(:logger).and_return { @logger }
       @session = RootSession.new(@needle)
     end
