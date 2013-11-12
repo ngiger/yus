@@ -811,8 +811,6 @@ module Yus
       entity = @session.create_entity(entity_name, 'entity_pass')
       @session.rename(entity_name, new_name)
       refute_nil(@session.find_entity(new_name))
-      assert_equal(new_name, @session.find_entity(entity_name).name)
-      skip("Niklaus is unsure whether only MockPersistence is wrong or if this an error in the yus implementation")
       assert_nil(@session.find_entity(entity_name))
     end
   end

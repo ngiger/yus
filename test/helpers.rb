@@ -1,21 +1,24 @@
 class MockPersistence
+  attr_reader :entities
   def initialize
-    @objects = {}
+    @entities = {}
   end
   def find_entity(name)
-    @objects[name]
+    @entities[name]
   end
   def add_entity(entity)
-    @objects[entity.name] = entity
+    @entities[entity.name] = entity
     entity
   end
   def delete_entity(name)
-    @objects.delete(name)
+    @entities.delete(name)
   end
   def save_entity(entity)
-    @objects[entity.name] = entity
-  end
-  def entities
-    @objects
+    if(@entities[entity.name])
+      @entities[entity.name] = entity
+    else
+      @entities.delete_if { |name, ent| ent.name == entity.name }
+      add_entity(entity)
+    end
   end
 end
