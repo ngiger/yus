@@ -4,6 +4,7 @@
 require 'drb'
 require 'thread'
 require 'yus/entity'
+require 'pp'
 begin 
   require 'encoding/character/utf-8'
 rescue LoadError
