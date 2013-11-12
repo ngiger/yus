@@ -8,6 +8,7 @@ require "minitest/autorun"
 require 'flexmock'
 require 'yus/session'
 require 'digest/sha2'
+require File.expand_path(File.dirname(__FILE__)+'/helpers.rb')
 
 module Yus
   class Session
@@ -802,19 +803,27 @@ module Yus
     def test_ping
       assert_equal(true, @session.ping)
     end
+    def test_rename
+      entity_name = 'entity_name'
+      @user.should_receive(:allowed?).and_return(true)
+      new_name = 'new_name'
+      @session.persistence = MockPersistence.new
+      entity = @session.create_entity(entity_name, 'entity_pass')
+      @session.rename(entity_name, new_name)
+      refute_nil(@session.find_entity(new_name))
+      assert_equal(new_name, @session.find_entity(entity_name).name)
+      skip("Niklaus is unsure whether only MockPersistence is wrong or if this an error in the yus implementation")
+      assert_nil(@session.find_entity(entity_name))
+    end
   end
   class TestRootSession < Minitest::Test
     def setup
       @config = FlexMock.new('config')
       @config.should_receive(:session_timeout).and_return { 0.5 }
-      @persistence = FlexMock.new
-      @logger = FlexMock.new('logger')
-      @logger.should_receive(:info).and_return {}
-      @logger.should_receive(:debug).and_return {}
       @needle = FlexMock.new('needle')
+      @persistence = MockPersistence.new
       @needle.should_receive(:persistence).and_return { @persistence }
       @needle.should_receive(:config).and_return { @config }.by_default
-      @needle.should_receive(:logger).and_return { @logger }
       @session = RootSession.new(@needle)
     end
     def test_valid
@@ -823,9 +832,34 @@ module Yus
     def test_allowed
       assert_equal(true, @session.allowed?('anything'))
     end
+   def test_delete_entity
+      entity_name = 'entity_name'
+      entity = @session.create_entity(entity_name, 'entity_pass')
+      assert_equal(entity, @session.find_entity(entity_name))
+      @session.delete_entity(entity_name)
+      assert_nil(@session.find_entity(entity_name))
+    end
     def test_name
       @config.should_receive(:root_name).and_return { 'root_name' }
       assert_equal('root_name', @session.name)
+    end
+    def test_last_login
+      entity_name = 'entity_name'
+      entity = @session.create_entity(entity_name, 'entity_pass')
+      domain = 'domain'
+      entity.login(domain)
+      assert_equal(entity, @session.find_entity(entity_name))
+      #require 'pry'; binding.pry
+      assert_in_delta(Time.now.to_f, @session.last_login(entity_name, domain).to_f)
+    end
+    def test_show
+      assert_raises(UnknownEntityError) {
+        @session.show('unkown_name')
+      }
+      entity_name = 'entity_name'
+      entity = @session.create_entity(entity_name, 'entity_pass')
+      assert_kind_of(String, @session.show(entity_name))
+      assert(@session.show(entity_name).index(entity_name) > 0)
     end
   end
 end

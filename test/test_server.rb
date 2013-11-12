@@ -7,6 +7,7 @@ gem "minitest"
 require "minitest/autorun"
 require 'yus/server'
 require 'flexmock'
+require 'tempfile'
 
 module Yus
   class Server
@@ -31,6 +32,11 @@ module Yus
     def test_authenticate__no_user
       @logger.should_receive(:warn).times(1)
       @persistence.should_receive(:find_entity).times(1)
+      assert_raises(UnknownEntityError) {
+        @server.authenticate('name', 'password')
+      }
+      # to test logging
+      @server.logger = Logger.new(Tempfile.new('test_authenticate__no_user').path)
       assert_raises(UnknownEntityError) {
         @server.authenticate('name', 'password')
       }
@@ -60,24 +66,49 @@ module Yus
       }
     end
     def test_login__success
-      user = FlexMock.new
+      user = FlexMock.new('login_success')
       user.should_receive(:authenticate).and_return { |pass|
         assert_equal('password', pass)
         true 
       }
       user.should_receive(:login)
+      user.should_receive(:authenticate_token).and_return(true)
       user.should_receive(:get_preference).and_return { |key, domain|
         {
           'session_timeout' =>  0.5, 
         }[key]
       }
       @persistence.should_receive(:find_entity).times(1).and_return { user }
-      @persistence.should_receive(:save_entity).times(1) 
+      @persistence.should_receive(:save_entity).times(1)
+      @server.logger = Logger.new(Tempfile.new('test_login__success').path)
       session = @server.login('name', 'password', 'domain')
       assert_instance_of(EntitySession, session)
       assert_kind_of(DRb::DRbUndumped, session)
       assert_equal([session], @server.instance_variable_get('@sessions'))
+      assert_kind_of(Yus::TokenSession, @server.login_token('name', 'password', 'domain'))
     end
+    def test_ping
+      assert_equal(true, @server.ping)
+    end
+    def test_login_token_YusError
+      user = FlexMock.new('login_success')
+      user.should_receive(:login)
+      user.should_receive(:authenticate_token).and_return{ 
+        raise YusError 
+      }
+      user.should_receive(:get_preference).and_return { |key, domain|
+        {
+          'session_timeout' =>  0.5, 
+        }[key]
+      }
+      @persistence.should_receive(:find_entity).times(1).and_return { user }
+      @persistence.should_receive(:save_entity).times(1)
+      @server.logger = Logger.new(Tempfile.new('test_login__success').path)
+      assert_raises(Yus::YusError) {
+        assert_equal(1, @server.login_token('name', 'password', 'domain'))
+     }
+    end
+    
     def test_logout
       needle = FlexMock.new('needle_logout')
       needle.should_receive(:config).and_return { @config }
@@ -86,10 +117,12 @@ module Yus
       sessions = @server.instance_variable_get('@sessions')
       session = RootSession.new(needle)
       sessions.push(session)
+      @server.logger = Logger.new(Tempfile.new('test_logout').path)
       @server.logout(session)
       assert_equal([], sessions)
     end
     def test_login__root
+      @server.logger = Logger.new(Tempfile.new('test_login__root').path)
       session = @server.login('admin', 'admin', 'domain')
       assert_instance_of(RootSession, session)
     end
@@ -127,6 +160,6 @@ module Yus
       sessions.push(session)
       sleep(2)
       assert_equal([], sessions)
-    end
+    end   
   end
 end
