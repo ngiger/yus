@@ -4,7 +4,7 @@ $: << File.expand_path('../lib', File.dirname(__FILE__))
 
 require 'drb'
 require 'drb/ssl'
-require 'password'
+require 'highline/import'
 require 'rclconf'
 require 'yus/session'
 require 'getoptlong'
@@ -48,7 +48,7 @@ server.ping
 
 session = nil
 begin
-  pass = Password.get("Password for #{config.root_name}: ")
+  pass = ask("Password for #{config.root_name}:  ") { |q| q.echo = false }
   session = server.login(config.root_name, pass.to_s, 'commandline')
 rescue Yus::YusError => e
   puts e.message
@@ -57,8 +57,8 @@ end
 
 cont = nil
 callcc { |cont| }
-pass1 = Password.get("New Password for #{name}: ")
-pass2 = Password.get("Repeat Password for #{name}: ")
+pass1 = ask("New Password for #{name}:  ") { |q| q.echo = false }
+pass2 = ask("Repeat Password for #{name}:  ") { |q| q.echo = false }
 
 if(pass1 != pass2)
   puts "Passwords did not match"

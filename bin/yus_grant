@@ -4,7 +4,7 @@ $: << File.expand_path('../lib', File.dirname(__FILE__))
 
 require 'drb'
 require 'drb/ssl'
-require 'password'
+require 'highline/import'
 require 'rclconf'
 require 'yus/session'
 require 'getoptlong'
@@ -68,7 +68,7 @@ server.ping
 
 session = nil
 begin
-  pass = Password.get("Password for #{config.root_name}: ")
+  pass = ask("Password for #{config.root_name}:  ") { |q| q.echo = false }
   session = server.login(config.root_name, pass.to_s, 'commandline')
 rescue Yus::YusError => e
   puts e.message

@@ -5,15 +5,13 @@ gem 'pg'
 gem 'dbi', '0.4.5', :git => 'https://github.com/zdavatz/ruby-dbi'
 
 # for running yus_add we need
-group :yus_runtime do
-  gem 'ruby-password'
-  gem 'rclconf'
+gem 'highline'
+gem 'rclconf'
 
 # for running yusd we need
-  gem 'odba'
-  gem 'dbd-pg'
-  gem 'deprecated', '2.0.1'
-end
+gem 'odba'
+gem 'dbd-pg'
+gem 'deprecated', '2.0.1'
 
 group :development, :test do
   gem 'flexmock'
