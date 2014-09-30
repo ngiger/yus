@@ -5,6 +5,8 @@ require 'drb'
 require 'thread'
 require 'yus/entity'
 require 'pp'
+require 'yaml'
+
 begin 
   require 'encoding/character/utf-8'
 rescue LoadError
@@ -42,6 +44,9 @@ module Yus
         save(user, group)
       }
       touch!
+    end
+    def dump_to_yaml(yaml_name)
+      File.open(yaml_name, 'w') { |f| YAML.dump(@persistence, f) }
     end
     def create_entity(name, valid_until=nil, valid_from=Time.now)
       info("create_entity(name=#{name}, valid_until=#{valid_until}, valid_from=#{valid_from})")
