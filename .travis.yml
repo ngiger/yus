@@ -3,7 +3,7 @@ before_install:
   - gem install bundler
 
 install:
-  - bundle install --without yus_runtime
+  - bundle install --without debugger
 
 script:
   - rake test

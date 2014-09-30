@@ -21,6 +21,6 @@ group :development, :test do
   gem 'hoe'
 end
 
-group :development do
+group :debugger do
   gem 'pry-debugger', :platforms => [:ruby_19, :ruby_20]
 end

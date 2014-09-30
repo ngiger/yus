@@ -126,7 +126,7 @@ module Yus
       session = @server.login('admin', 'admin', 'domain')
       assert_instance_of(RootSession, session)
     end
-    def test_ping
+    def test_ping_2
       assert(@server.ping)
     end
     def test_clean
