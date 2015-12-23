@@ -42,6 +42,25 @@ defaults = {
 config = RCLConf::RCLConf.new(ARGV, defaults)
 config.load(config.config)
 
+if File.exist?(config.ssl_key) && File.exist?(config.ssl_cert)
+  puts "SSL already set up with #{config.ssl_key} #{config.ssl_cert}"
+else
+  unless File.exist?(config.ssl_key)
+    cmd = "ssh-keygen -t rsa -f #{config.ssl_key.sub('.key','')}"
+    unless system(cmd)
+      puts "Failed creating key using: #{cmd}"
+      exit(1)
+    end
+  end
+  cmd ="openssl req -key #{config.ssl_key} -out #{config.ssl_cert}"
+  cmd += " -new -x509 -batch -passin pass:''"
+  puts cmd
+  unless system(cmd)
+    puts "Failed creating certificate using: #{cmd}"
+    exit(1)
+  end
+end
+
 require File.join('yus', 'persistence', config.persistence)
 persistence = nil
 case config.persistence

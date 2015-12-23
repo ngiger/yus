@@ -7,11 +7,11 @@ root_name: ngiger@ywesee.com
 # root_pass for 1234
 root_pass: 03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
 log_level: DEBUG
-ssl_key: /etc/yus/data/yus.key
-ssl_cert: /etc/yus/data/yus.crt
 session_timeout: 3600
 
 # The names for pgTest => db_host, yus_data => db_name must be in sync between
 # docker-compose.yml, test/yus_demo.yml and Dockerfile
 db_host: pgTest
 db_name: yus_data
+ssl_key: /etc/yus_demo/data/yus.key
+ssl_cert: /etc/yus_demo/data/yus.crt
