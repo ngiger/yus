@@ -3,3 +3,4 @@ vendor/
 pkg/
 coverage
 .ruby-version
+*~

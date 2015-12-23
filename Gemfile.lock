@@ -4,35 +4,68 @@ GIT
   specs:
     dbi (0.4.5)
 
-GEM
-  remote: http://rubygems.org/
+PATH
+  remote: .
   specs:
-    byebug (5.0.0)
-      columnize (= 0.9.0)
+    yus (1.0.3)
+      dbd-pg
+      dbi (= 0.4.5)
+      deprecated (= 2.0.1)
+      needle
+      odba
+      pg
+      rclconf
+      ruby-password
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (8.2.1)
     coderay (1.1.0)
-    columnize (0.9.0)
     dbd-pg (0.3.9)
       dbi (>= 0.4.0)
       pg
     deprecated (2.0.1)
+    diff-lcs (1.2.5)
+    docile (1.1.5)
     flexmock (1.3.2)
-    hoe (3.14.2)
-      rake (>= 0.8, < 11.0)
+    json (1.8.3)
     method_source (0.8.2)
-    minitest (5.8.2)
+    minitest (5.8.3)
     needle (1.3.0)
     odba (1.1.0)
-    pg (0.18.3)
-    power_assert (0.2.4)
+    pg (0.18.4)
+    power_assert (0.2.6)
     pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    pry-byebug (3.2.0)
-      byebug (~> 5.0)
+    pry-byebug (3.3.0)
+      byebug (~> 8.0)
       pry (~> 0.10)
     rake (10.4.2)
     rclconf (1.0.0)
+    rspec (3.4.0)
+      rspec-core (~> 3.4.0)
+      rspec-expectations (~> 3.4.0)
+      rspec-mocks (~> 3.4.0)
+    rspec-core (3.4.1)
+      rspec-support (~> 3.4.0)
+    rspec-expectations (3.4.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.4.0)
+    rspec-mocks (3.4.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.4.0)
+    rspec-support (3.4.1)
+    ruby-password (0.15.5)
+      ruby-termios
+    ruby-termios (0.9.6)
+    simplecov (0.11.1)
+      docile (~> 1.1.0)
+      json (~> 1.8)
+      simplecov-html (~> 0.10.0)
+    simplecov-html (0.10.0)
     slop (3.6.0)
     test-unit (3.1.5)
       power_assert
@@ -41,19 +74,16 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  dbd-pg
+  bundler
   dbi (= 0.4.5)!
-  deprecated (= 2.0.1)
   flexmock (~> 1.3.0)
-  hoe
   minitest
-  needle
-  odba
-  pg
   pry-byebug
   rake
-  rclconf
+  rspec
+  simplecov
   test-unit
+  yus!
 
 BUNDLED WITH
-   1.10.6
+   1.11.2
