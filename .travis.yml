@@ -6,8 +6,10 @@ services:
 language: ruby
 
 before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y cracklib-runtime
   - gem install bundler
-  - docker pull  ruby:2.2.4-onbuild
+  - docker pull ruby:2.2.4-onbuild
 
 bundler_args: --without debugger
 
