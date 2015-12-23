@@ -1,0 +1,49 @@
+# Copyright (c) 2015 by Niklaus Giger ngiger@ywesee.com
+#
+# This file is part of oddb-docker.
+#
+# oddb-docker is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# oddb-docker is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with oddb-docker.  If not, see <http://www.gnu.org/licenses/>.
+#
+# # This is a setup for running tests
+# Security is not really a concern!
+#
+
+YusData:
+  image: postgres:9.4
+  entrypoint: /bin/bash
+
+# The names for pgTest => db_host, yus_data => db_name must be in sync between
+# docker-compose.yml, test/yus_demo.yml and Dockerfile
+pgTest:
+  image: postgres:9.4
+  volumes_from:
+    - YusData
+  environment:
+    POSTGRES_USER: yus
+    POSTGRES_PASSWORD: yus
+    POSTGRES_DB: yus_data
+yustest:
+  build: .
+  volumes:
+    - /home/docker-data-containers/yus-test:/var/yus_home
+  ports:
+  # by defaul yus run on port 9997, could by overriden by /etc/yus/yus.ml or $HOME/.yus/yus.yml
+    - "9997:9997"
+  links:
+    - pgTest
+  environment:
+    PGHOST: pgTest
+    PGUSER: yus
+    PGPASSWORD: yus
+    PGDATABASE: yus_data

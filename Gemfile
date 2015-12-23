@@ -1,7 +1,6 @@
 source "http://rubygems.org"
 
 gem 'needle'
-#gem 'pg', '0.9.0'
 gem 'pg'
 # we have some important patches here!!
 gem 'dbi', '0.4.5', :git => 'https://github.com/zdavatz/ruby-dbi'
