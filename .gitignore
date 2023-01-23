@@ -1,3 +1,8 @@
 .bundle/
 vendor/
 pkg/
+
+# Devenv
+.devenv*
+devenv.local.nix
+
