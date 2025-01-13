@@ -1,56 +1,56 @@
 #!/usr/bin/env ruby
 # AutoInvoicer -- ydim -- 13.01.2006 -- hwyss@ywesee.com
 
-require 'rclconf'
-require 'getoptlong'
-require 'highline/import'
+require "rclconf"
+require "getoptlong"
+require "highline/import"
 
 module Yus
   def self.default_opts
     opts = []
     GetoptLong.new(
-      ['--help', '-h', GetoptLong::NO_ARGUMENT],
-      ['--config', '-c', GetoptLong::OPTIONAL_ARGUMENT],
-      ['--root_name', '-r', GetoptLong::OPTIONAL_ARGUMENT],
-      ['--server_url', '-u', GetoptLong::OPTIONAL_ARGUMENT],
-      ['--yus_dir', '-d', GetoptLong::OPTIONAL_ARGUMENT]
+      ["--help", "-h", GetoptLong::NO_ARGUMENT],
+      ["--config", "-c", GetoptLong::OPTIONAL_ARGUMENT],
+      ["--root_name", "-r", GetoptLong::OPTIONAL_ARGUMENT],
+      ["--server_url", "-u", GetoptLong::OPTIONAL_ARGUMENT],
+      ["--yus_dir", "-d", GetoptLong::OPTIONAL_ARGUMENT]
     ).each { |key, pair|
       opts.push("#{key}=#{pair}")
     }
     opts
   end
 
-  def self.session(opts = self.default_opts)
-    if /--help=/.match(opts[0])
-            puts <<-EOF
-#{File.basename(__FILE__)} ...
-
--h, --help:
-   show help
-
--c -config
-   config directory of yus.yml
-
--r --root_name
-   Root name to use for reading yus
-
--s --config
-   path to YAML-config of Yus
+  def self.session(opts = default_opts)
+    if /--help=/.match?((opts[0]))
+      puts <<~EOF
+        #{File.basename(__FILE__)} ...
+        
+        -h, --help:
+           show help
+        
+        -c -config
+           config directory of yus.yml
+        
+        -r --root_name
+           Root name to use for reading yus
+        
+        -s --config
+           path to YAML-config of Yus
       EOF
       exit
     end
-    default_dir = '/etc/yus'
+    default_dir = "/etc/yus"
     default_config_files = [
-      File.join(default_dir, 'yus.yml'),
+      File.join(default_dir, "yus.yml")
     ]
-     defaults = {
-      'config'            => default_config_files,
-      'root_name'         => 'admin',
-      'server_url'        => 'drbssl://localhost:9997',
-      'yus_dir'           => default_config_files,
+    defaults = {
+      "config" => default_config_files,
+      "root_name" => "admin",
+      "server_url" => "drbssl://localhost:9997",
+      "yus_dir" => default_config_files
     }
 
-    opts.each{|opt|opt.sub!(/^--/, '') } # Remove leading '--' from the GetOptLong
+    opts.each { |opt| opt.sub!(/^--/, "") } # Remove leading '--' from the GetOptLong
     config = RCLConf::RCLConf.new(opts, defaults)
     config.load(config.config)
 
@@ -60,14 +60,15 @@ module Yus
     session = nil
     begin
       pass = Yus.get_password("Password for #{config.root_name}: ")
-      session = server.login(config.root_name, pass.to_s, 'commandline')
+      session = server.login(config.root_name, pass.to_s, "commandline")
     rescue Yus::YusError => e
       puts e.message
       retry
     end
-    return session
+    session
   end
-  def self.get_password(prompt='Password: ')
-    ask(prompt) { |q| q.echo = false}
+
+  def self.get_password(prompt = "Password: ")
+    ask(prompt) { |q| q.echo = false }
   end
 end

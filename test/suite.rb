@@ -3,8 +3,8 @@
 
 $: << File.dirname(File.expand_path(__FILE__))
 
-require 'minitest/autorun'
+require "minitest/autorun"
 
 Dir.foreach(File.dirname(__FILE__)) { |file|
-	require file if /^test_.*\.rb$/o.match(file)
+  require file if /^test_.*\.rb$/o.match?(file)
 }

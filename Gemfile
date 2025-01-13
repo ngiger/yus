@@ -1,6 +1,4 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 # Specify gem's dependencies in yus.gemspec
 gemspec
-
-

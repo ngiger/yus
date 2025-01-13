@@ -7,33 +7,36 @@ module Yus
     def initialize
       @items = {}
     end
-    def expiry_time(item=:everything)
-      if(time = [@items[item], @items[:everything]].compact.max)
+
+    def expiry_time(item = :everything)
+      if (time = [@items[item], @items[:everything]].compact.max)
         time if time.is_a?(Time)
       else
         raise NotPrivilegedError
       end
     end
-    def grant(item, expiry_time=:never)
+
+    def grant(item, expiry_time = :never)
       @items.store(item, expiry_time)
     end
+
     def granted?(item)
-      if(expiry_time = @items[item])
+      if (expiry_time = @items[item])
         case expiry_time
         when Time
           Time.now < expiry_time
         else
           true
         end
-      elsif(@items.include?(:everything))
+      elsif @items.include?(:everything)
         # check time
         granted?(:everything)
       else
         item = item.to_s.dup
-        if(item[-1] != ?*)
-          while(!item.empty?)
+        if item[-1] != "*"
+          until item.empty?
             item.slice!(/[^.]*$/)
-            if(granted?(item + "*"))
+            if granted?(item + "*")
               return true
             end
             item.chop!
@@ -42,6 +45,7 @@ module Yus
         false
       end
     end
+
     def info
       @items.collect { |item, time|
         info = [item.to_s]
@@ -51,7 +55,8 @@ module Yus
         info
       }.sort
     end
-    def revoke(item, expiry_time=nil)
+
+    def revoke(item, expiry_time = nil)
       case expiry_time
       when Time
         @items.store(item, expiry_time)

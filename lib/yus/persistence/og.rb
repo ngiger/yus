@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 # Persistence::Og -- yus -- 31.05.2006 -- hwyss@ywesee.com
 
-require 'og'
-require 'yus/entity'
-require 'yus/server'
+require "og"
+require "yus/entity"
+require "yus/server"
 
 module Yus
   module Persistence
@@ -11,21 +11,26 @@ module Yus
       def add_entity(entity)
         entity.save
       end
+
       def entities
         Entity.find_all
       end
+
       def find_entity(name)
         Entity.find_by_name(name)
       end
+
       def save_entity(entity)
         entity.save
       end
     end
   end
+
   class Privilege
     property :expiry_time, Time
     property :items, Hash
   end
+
   class Entity
     property :name, String
     property :valid_from, Time
