@@ -27,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "ydbd-pg"
   spec.add_dependency 'rclconf'
   spec.add_dependency 'logger'
+  spec.add_dependency 'observer'
   spec.add_dependency 'odba', '>= 1.1.6'
 
   spec.add_runtime_dependency 'highline'
