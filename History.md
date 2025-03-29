@@ -1,5 +1,7 @@
 # 1.0.8 / Not yet released
 
+* Removed obsolete install.rb file (from 2010)
+* Ran standard:fix and manually corrected all warnings
 * Remove references to no longer used gem og
 * Moved *.txt files to *.md (Readme, History, Guide)
 * Made bin/yus* commands work again (removed loading unused gems)
