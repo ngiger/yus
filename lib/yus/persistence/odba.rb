@@ -22,7 +22,7 @@ module Yus
       end
 
       def delete_entity(name)
-        if entity = @entities.delete(Entity.sanitize(name))
+        if (entity = @entities.delete(Entity.sanitize(name)))
           @entities.odba_store
           affiliations = entity.affiliations
           affiliations.odba_delete unless affiliations.odba_unsaved?

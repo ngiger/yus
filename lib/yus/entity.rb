@@ -41,7 +41,7 @@ module Yus
     end
 
     def authenticate_token(token)
-      if expires = (@tokens ||= {}).delete(token)
+      if (expires = (@tokens ||= {}).delete(token))
         expires > Time.now
       else
         # Hacking-Attempt? Remove all Tokens for this user.
@@ -114,7 +114,7 @@ module Yus
     end
 
     def remove_token(token)
-      @tokens.delete(token) if @tokens
+      @tokens&.delete(token)
     end
 
     def rename(new_name)

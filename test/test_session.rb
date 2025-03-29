@@ -237,13 +237,13 @@ module Yus
   end
 
   class TestEntitySession < Minitest::Test
-    HexDigestSample = "cleartext"
+    HEX_DIGEST_SAMPLE = "cleartext"
     def setup
       @config = FlexMock.new("config")
       @config.should_receive(:session_timeout).and_return { 0.5 }
       @config.should_receive(:token_lifetime).and_return { 0.2 }
       @digest = FlexMock.new("digest")
-      @digest.should_receive(:hexdigest).and_return { HexDigestSample }
+      @digest.should_receive(:hexdigest).and_return { HEX_DIGEST_SAMPLE }
       @config.should_receive(:digest).by_default.and_return { @digest }
       @user = FlexMock.new("user")
       @user.should_receive(:set_token).and_return { "set_token" }
@@ -305,7 +305,7 @@ module Yus
 
     def test_generate_token
       assert_equal(false, @session.expired?)
-      assert_equal(HexDigestSample, @session.generate_token)
+      assert_equal(HEX_DIGEST_SAMPLE, @session.generate_token)
     end
 
     def test_create_entity__duplicate
@@ -947,12 +947,12 @@ module Yus
     def test_dump_to_named_yaml
       setup_for_dump
       tmpdir = File.expand_path(File.join(__FILE__, "../tmp"))
-      outFile = File.join(tmpdir, "yus_dump.yaml")
-      assert(@session.dump_to_yaml(outFile))
-      assert(File.exist?(outFile))
-      assert(File.size(outFile) > 0)
-      dump_content = IO.read(outFile)
-      # puts "#{outFile} is #{File.size(outFile)} bytes lang and contains \n#{dump_content}"
+      out_file = File.join(tmpdir, "yus_dump.yaml")
+      assert(@session.dump_to_yaml(out_file))
+      assert(File.exist?(out_file))
+      assert(File.size(out_file) > 0)
+      dump_content = IO.read(out_file)
+      # puts "#{out_file} is #{File.size(out_file)} bytes lang and contains \n#{dump_content}"
       refute_nil(dump_content)
       refute_nil(dump_content.index(@entity_name))
       FileUtils.rm_rf(tmpdir)
@@ -961,11 +961,11 @@ module Yus
     def test_dump_to_default
       setup_for_dump
       assert(@session.dump_to_yaml)
-      outFile = File.expand_path(File.join(__FILE__, "..", "..", "data", "yus_dump.yml"))
-      assert(File.exist?(outFile), "outfile #{outFile} should exist")
-      assert(File.size(outFile) > 0)
-      dump_content = IO.read(outFile)
-      # puts "#{outFile} is #{File.size(outFile)} bytes lang and contains \n#{dump_content}"
+      out_file = File.expand_path(File.join(__FILE__, "..", "..", "data", "yus_dump.yml"))
+      assert(File.exist?(out_file), "outfile #{out_file} should exist")
+      assert(File.size(out_file) > 0)
+      dump_content = IO.read(out_file)
+      # puts "#{out_file} is #{File.size(out_file)} bytes lang and contains \n#{dump_content}"
       refute_nil(dump_content)
       refute_nil(dump_content.index(@entity_name))
     end
