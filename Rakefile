@@ -3,6 +3,9 @@
 
 require 'bundler/gem_tasks'
 require 'rake/testtask'
+require "standard/rake"
+require 'simplecov'
+SimpleCov.start
 
 
 # dependencies are now declared in bbmb.gemspec

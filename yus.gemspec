@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"] = spec.homepage + "/blob/master/History.txt"
   spec.required_ruby_version = '>= 3.0'
 
-  spec.metadata['allowed_push_host'] = 'https://rubygems.org' if RUBY_VERSION.to_f > 2.0
+  spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
@@ -28,10 +28,13 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rclconf'
   spec.add_dependency 'logger'
   spec.add_dependency 'observer'
+  spec.add_dependency 'getoptlong'
   spec.add_dependency 'odba', '>= 1.1.6'
 
   spec.add_runtime_dependency 'highline'
   spec.add_dependency 'deprecated', '2.0.1'
+  spec.add_development_dependency "debug"
+  spec.add_development_dependency "standard"
   spec.add_development_dependency "drb"
   spec.add_development_dependency "test-unit"
   spec.add_development_dependency "minitest"
