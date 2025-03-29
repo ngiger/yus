@@ -44,26 +44,13 @@ config.load(config.config)
 
 require File.join('yus', 'persistence', config.persistence)
 persistence = nil
-case config.persistence
-when 'odba'
-  require 'odba/connection_pool'
-  require 'odba/drbwrapper'
-  DRb.install_id_conv ODBA::DRbIdConv.new
-  ODBA.storage.dbi = ODBA::ConnectionPool.new("DBI:Pg:#{config.db_name}",
-                                             config.db_user, config.db_auth)
-  ODBA.cache.setup
-  persistence = Yus::Persistence::Odba.new
-when 'og'
-  DRb.install_id_conv DRb::TimerIdConv.new
-  Og.setup({
-    :name     => config.db_name,
-    :user     => config.db_user,
-    :password => config.db_auth,
-    :store    => config.db_backend,
-    :evolve_schema => true,
-  })
-  persistence = Yus::Persistence::Og.new
-end
+require 'odba/connection_pool'
+require 'odba/drbwrapper'
+DRb.install_id_conv ODBA::DRbIdConv.new
+ODBA.storage.dbi = ODBA::ConnectionPool.new("DBI:Pg:#{config.db_name}",
+                                            config.db_user, config.db_auth)
+ODBA.cache.setup
+persistence = Yus::Persistence::Odba.new
 
 log_file = config.log_file
 if(log_file.is_a?(String))

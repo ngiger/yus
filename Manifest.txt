@@ -1,7 +1,7 @@
 Guide.txt
-History.txt
+History.md
 LICENSE
-README.txt
+readme.md
 bin/yus_add_user
 bin/yus_delete_user
 bin/yus_grant
@@ -13,7 +13,6 @@ data/yus.key
 install.rb
 lib/yus/entity.rb
 lib/yus/persistence/odba.rb
-lib/yus/persistence/og.rb
 lib/yus/privilege.rb
 lib/yus/server.rb
 lib/yus/session.rb
