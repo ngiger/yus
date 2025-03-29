@@ -9,8 +9,7 @@ software packages.
 
 ## Features/Problems:
 
-* Only runs on Ruby >= 2.1.0
-* runs fine with Ruby 3.1.1
+* Needs Ruby 3.x
 
 ## Install:
 

@@ -1,4 +1,4 @@
-Guide.txt
+Guide.md
 History.md
 LICENSE
 readme.md
