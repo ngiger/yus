@@ -3,13 +3,8 @@ require "bundler/gem_tasks"
 require "rake/testtask"
 require "standard/rake"
 require "simplecov"
+SimpleCov.command_name 'Unit Tests'
 SimpleCov.start
-
-# dependencies are now declared in bbmb.gemspec
-desc "Offer a gem task like hoe"
-task gem: :build do
-  Rake::Task[:build].invoke
-end
 
 desc "test using minittest via test/suite.rb"
 task :test do |t|

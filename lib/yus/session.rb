@@ -3,9 +3,9 @@
 
 require "drb"
 require "yus/entity"
-require "pp"
 require "yaml"
 require "fileutils"
+require "pp"
 
 begin
   require "encoding/character/utf-8"
@@ -97,7 +97,7 @@ module Yus
     end
 
     def expired?
-      Time.now > (@last_access + @timeout)
+      Time.now > (@last_access + @timeout.to_i)
     end
 
     def entities
@@ -165,7 +165,8 @@ module Yus
       @mutex.synchronize {
         allow_or_fail("set_password", name)
         user = find_or_fail(name)
-        user.passhash = @needle.config.digest.hexdigest(pass)
+        cmd = "#{@needle.config.digest}.hexdigest '#{pass}'"
+        user.passhash = Server.class_eval(cmd)
         save(user)
       }
       touch!
@@ -235,7 +236,8 @@ module Yus
         entity = Entity.new(name, valid_until, valid_from)
         entity.grant("set_password", name)
         if pass
-          entity.passhash = @needle.config.digest.hexdigest(pass)
+          cmd = "#{@needle.config.digest}.hexdigest '#{pass}'"
+          entity.passhash = Server.class_eval(cmd)
         end
         @needle.persistence.add_entity(entity)
       }
@@ -285,7 +287,8 @@ module Yus
         unless user.allowed?("reset_password", token)
           raise NotPrivilegedError, "You are not privileged to reset #{name}'s password"
         end
-        user.passhash = @needle.config.digest.hexdigest(password)
+        cmd = "#{@needle.config.digest}.hexdigest '#{password}'"
+        user.passhash = Server.class_eval(cmd)
         user.revoke("reset_password", token)
         save(user)
       }
@@ -333,7 +336,8 @@ module Yus
     end
 
     def generate_token
-      token = @needle.config.digest.hexdigest(rand(2**128).to_s)
+      cmd = "#{@needle.config.digest}.hexdigest '#{rand(2**128).to_s}'"
+      token  = Server.class_eval(cmd)
       expires = Time.now + @needle.config.token_lifetime.to_i * 24 * 60 * 60
       @user.set_token token, expires
       save @user
@@ -390,7 +394,6 @@ module Yus
     end
 
     def show(name, recursive = false)
-      require "pp"
       find_or_fail(name).info(recursive).pretty_inspect
     end
 

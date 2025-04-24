@@ -19,7 +19,7 @@ You must have a working installation of Ruby 3. and git.
 
 If you do not yet have a private key you will have to create one with 
 
-    ssh-keygen -t rsa -f /opt/src/yus/data/user_tom
+    ssh-keygen -t rsa -f /opt/src/yus/data/user_tom -b 4096 -C "user_tom@domain.com" -q -N ''
 
     openssl x509 -outform der -in /opt/src/yus/data/user_tom.pem -out /opt/src/yus/data/user_tom.crt
 do _not_ set a password for the key otherwise yus-server will always
@@ -39,6 +39,9 @@ Determine the SHA256 value of the root_pass (password for the yus root user, in 
 use the sha256.rb which is in the root of the yus checkout.
 
     ruby sha256.rb hatakeyama
+    # should give
+    password: hatakeyama
+    SHA256 encoding: 48714061119f3bb753a0c63dd4230f641ab79e58eb603fc263925c53580acdf1
   
 Create the file /etc/yus/yus.yml with the following content (using the output of the previous command)
 

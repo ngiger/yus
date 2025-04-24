@@ -1,59 +1,67 @@
 #!/usr/bin/env ruby
 # AutoInvoicer -- ydim -- 13.01.2006 -- hwyss@ywesee.com
-
-require "rclconf"
 require "getoptlong"
 require "highline/import"
-
+require 'optparse'
+require 'debug'
 module Yus
-  def self.default_opts
-    opts = []
-    GetoptLong.new(
-      ["--help", "-h", GetoptLong::NO_ARGUMENT],
-      ["--config", "-c", GetoptLong::OPTIONAL_ARGUMENT],
-      ["--root_name", "-r", GetoptLong::OPTIONAL_ARGUMENT],
-      ["--server_url", "-u", GetoptLong::OPTIONAL_ARGUMENT],
-      ["--yus_dir", "-d", GetoptLong::OPTIONAL_ARGUMENT]
-    ).each { |key, pair|
-      opts.push("#{key}=#{pair}")
-    }
-    opts
+  class Config
+    def initialize(defaults = Y8s.default_opts, load_from = defaults[:config])
+      defaults.each do |key, value|
+        cmd = "Config.class_eval {attr_reader :#{key.to_sym}}; @#{key.to_s} = '#{value}'"
+        eval(cmd)
+      end
+      # Now defaults will be overridden via content from config file
+      content = YAML.load_file(load_from)
+      content.each do |key, value|
+        cmd = "@#{key.to_s} = '#{value}'"
+        eval(cmd)
+      end
+    end
+  end
+  def self.default_parser(options = self.default_opts)
+    parser = OptionParser.new do |opts|
+      opts.on("-v", "--[no-]verbose", "Run verbosely") do |value|
+        $VERBOSE = true
+        options[:verbose] = value
+      end
+      opts.on("-c", "--config config_file", "Use this configfile") do |value|
+        options[:config] = value
+      end
+      opts.on("-r", "--root_name name", "Rootname for yus server") do |value|
+        options[:root_name] = value
+      end
+      opts.on("-u", "--server_url name", "server_url for yus server") do |value|
+        options[:server_url] = value
+      end
+      opts.on("-d", "--yus_dir name", "config_dir for yus server") do |value|
+        options[:yus_dir] = value
+      end
+    end
+    parser
   end
 
-  def self.session(opts = default_opts)
-    if /--help=/.match?(opts[0])
-      puts <<~EOF
-        #{File.basename(__FILE__)} ...
-        
-        -h, --help:
-           show help
-        
-        -c -config
-           config directory of yus.yml
-        
-        -r --root_name
-           Root name to use for reading yus
-        
-        -s --config
-           path to YAML-config of Yus
-      EOF
-      exit
-    end
+  def self.default_opts
     default_dir = "/etc/yus"
+    this = File.dirname(__FILE__)
+    data_dir = File.expand_path(this + "/../../data")
     default_config_files = [
-      File.join(default_dir, "yus.yml")
+      File.join(default_dir, "yus.yml"),
+      File.join(data_dir, "yus.yml")
     ]
+    default_config_files.delete_if{|x| !File.exist?(x)}
     defaults = {
-      "config" => default_config_files,
-      "root_name" => "admin",
-      "server_url" => "drbssl://localhost:9997",
-      "yus_dir" => default_config_files
+      :config => default_config_files.first,
+      :root_name => "admin",
+      :server_url => "drbssl://127.0.0.1:9997",
+      :yus_dir => File.dirname(default_config_files.first)
     }
+    puts "default_config_files are now #{default_config_files}" if $VERBOSE
+    defaults
+  end
 
-    opts.each { |opt| opt.sub!(/^--/, "") } # Remove leading '--' from the GetOptLong
-    config = RCLConf::RCLConf.new(opts, defaults)
-    config.load(config.config)
-
+  def self.session(opts)
+    config = Config.new(opts)
     server = DRb::DRbObject.new(nil, config.server_url)
     server.ping
 

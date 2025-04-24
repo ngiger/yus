@@ -11,3 +11,9 @@ devenv.local.nix
 
 # pre-commit
 .pre-commit-config.yaml
+
+!bin
+Guide.txt
+test/data
+
+coverage

@@ -4,20 +4,20 @@ $: << File.expand_path('../lib', File.dirname(__FILE__))
 
 require 'drb'
 require 'drb/ssl'
-require 'rclconf'
 require 'yus/session'
 require 'yus/helpers'
 require 'getoptlong'
 
 opts = Yus.default_opts
-name, action, item = ARGV
+parser = Yus.default_parser(opts)
+parser.banner = "Usage: yus_delete_user <username>"
 
-unless(name)
-	puts <<-EOS
-Usage: yus_delete_user <username>
-	EOS
-  exit
+parser.parse!(into: opts)
+unless (name = ARGV.first)
+  puts parser.help
+  exit(1)
 end
 
 session = Yus.session(opts)
 session.delete_entity(name)
+puts "Deleted user #{name}"

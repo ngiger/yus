@@ -1,54 +1,51 @@
 #!/usr/bin/env ruby
-
 $: << File.expand_path('../lib', File.dirname(__FILE__))
-
-require 'rclconf'
+require 'yaml'
 require 'logger'
 require 'drb'
 require 'drb/ssl'
 require 'drb/timeridconv'
 require 'digest/sha2'
-require 'odba/18_19_loading_compatibility'
+require 'yus/helpers'
 
-default_dir = File.join('/etc', 'yus')
-default_config_files = [
-  File.join(default_dir, 'yus.yml'),
-]
-pp default_config_files
+default_options = Yus.default_opts
+default_options[:ssl_key] = File.expand_path('../data/yus.key', File.dirname(__FILE__))
+default_options[:ssl_cert] = File.expand_path('../data/yus.crt', File.dirname(__FILE__))
+default_options[:cleaner_interval] = 300
+default_options[:session_timeout] = 3600
+default_options[:persistence] = "odba"
+default_options[:db_auth] = "yus"
+default_options[:db_user] = "yus"
+default_options[:db_name] = "yus"
+default_options[:digest] = Digest::SHA256
+default_options[:log_file] = "STDERR"
+default_options[:log_level] = "INFO"
+default_options[:root_name] = "admin"
+default_options[:root_pass] = nil
 
-defaults = {
-  'cleaner_interval' =>  300,
-  'config'			      => default_config_files,
-  'db_name'           => 'yus',
-  'db_user'           => 'yus',
-  'db_auth'           => 'yus',
-  'db_backend'        => :psql,
-  'digest'            => Digest::SHA256,
-  'log_file'          => STDERR,
-  'log_level'         => 'INFO',
-  'persistence'       => 'odba',
-  'root_name'         => 'admin',
-  'root_pass'         => nil,
-  'server_url'        => 'druby://127.0.0.1:9997',
-  'session_timeout'   => 300,
-  'ssl_key'           => File.expand_path('../data/yus.key',
-                                          File.dirname(__FILE__)),
-  'ssl_cert'          => File.expand_path('../data/yus.crt',
-                                          File.dirname(__FILE__)),
-  'token_lifetime'    => 30,
-  'yus_dir'           => default_dir,
-}
-
-config = RCLConf::RCLConf.new(ARGV, defaults)
-config.load(config.config)
+parser = Yus.default_parser(default_options)
+parser.banner = "To start your YUS daemon call: yusd [options]"
+parser.on("--token_lifetime seconds", "Lifetime in seconds before a token expires") do |value|
+        default_options["token_lifetime"] = value
+      end
+parser.on("--ssl_cert file", "path of SSL certificate file") do |value|
+        default_options["ssl_cert"] = value
+      end
+options = {}
+parser.parse!(into: options)
+config = Yus::Config.new(options.merge!(default_options))
 
 require File.join('yus', 'persistence', config.persistence)
 persistence = nil
 require 'odba/connection_pool'
 require 'odba/drbwrapper'
 DRb.install_id_conv ODBA::DRbIdConv.new
-ODBA.storage.dbi = ODBA::ConnectionPool.new("DBI:Pg:#{config.db_name}",
-                                            config.db_user, config.db_auth)
+if /sqlite/i.match(config.db_name)
+ ODBA.storage.dbi = ODBA::ConnectionPool.new('sqlite:/')
+else
+  ODBA.storage.dbi = ODBA::ConnectionPool.new("DBI:Pg:#{config.db_name}",
+                                              config.db_user, config.db_auth)
+end
 ODBA.cache.setup
 persistence = Yus::Persistence::Odba.new
 

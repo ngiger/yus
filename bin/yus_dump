@@ -4,14 +4,20 @@ $: << File.expand_path('../lib', File.dirname(__FILE__))
 
 require 'drb'
 require 'drb/ssl'
-require 'rclconf'
 require 'yus/session'
 require 'yus/helpers'
 require 'getoptlong'
 
 opts = Yus.default_opts
-filename = ARGV.first
+parser = Yus.default_parser(opts)
+parser.banner = "Usage: yus_dump <filename>"
+
+parser.parse!(into: opts)
+unless (filename = ARGV.first)
+  puts parser.help
+  exit(1)
+end
 
 session = Yus.session(opts)
 session.dump_to_yaml(filename)
-
+puts "Created #{filename} with #{File.size(filename)} bytes"

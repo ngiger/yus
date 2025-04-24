@@ -22,23 +22,24 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "needle"
-  spec.add_dependency "ydbi"
-  spec.add_dependency "ydbd-pg"
-  spec.add_dependency "rclconf"
   spec.add_dependency "logger"
   spec.add_dependency "observer"
   spec.add_dependency "getoptlong"
-  spec.add_dependency "odba", ">= 1.1.6"
+  spec.add_dependency "optparse"
+  spec.add_dependency "odba", ">= 1.1.9"
+#  spec.add_dependency "deprecated", "2.0.1"
 
   spec.add_runtime_dependency "highline"
-  spec.add_dependency "deprecated", "2.0.1"
+
   spec.add_development_dependency "debug"
   spec.add_development_dependency "standard"
   spec.add_development_dependency "drb"
   spec.add_development_dependency "test-unit"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "bundler"
-  spec.add_development_dependency "flexmock", "~>1.3.0"
+    spec.add_development_dependency "flexmock", "<2.0"
+
+#  spec.add_development_dependency "flexmock", "<3.0" #, "~>1.3.0"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "simplecov"
 end

@@ -27,7 +27,8 @@ module Yus
       @needle.logger.info(self.class) {
         sprintf("Login attempt for %s from %s", name, domain)
       }
-      hash = @needle.config.digest.hexdigest(password.to_s)
+      cmd = "#{@needle.config.digest}.hexdigest '#{password}'"
+      hash = Server.class_eval(cmd)
       session = login_root(name, hash, domain) \
         || login_entity(name, hash, domain) # raises YusError
       @sessions.push(session)
@@ -111,6 +112,7 @@ module Yus
         @needle.logger.info(self.class) {
           sprintf("Authentication succeeded for root: %s", name)
         }
+
         RootSession.new(@needle)
       end
     end
@@ -118,7 +120,7 @@ module Yus
     def run_cleaner
       @cleaner = Thread.new {
         loop {
-          sleep(@needle.config.cleaner_interval)
+          sleep(@needle.config.cleaner_interval.to_i)
           clean
         }
       }

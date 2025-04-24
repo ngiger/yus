@@ -4,29 +4,50 @@ $: << File.expand_path('../lib', File.dirname(__FILE__))
 
 require 'drb'
 require 'drb/ssl'
-require 'rclconf'
 require 'yus/session'
 require 'yus/helpers'
 require 'getoptlong'
+if false
+  opts = Yus.default_opts
+  name = ARGV.first
 
-opts = Yus.default_opts
-name = ARGV.first
+  unless(name)
+      puts <<-EOS
+  Usage: yus_passwd <username>
+      EOS
+    exit
+  end
 
-unless(name)
-	puts <<-EOS
-Usage: yus_passwd <username>
-	EOS
-  exit
+  session = Yus.session(opts)
+
+  pass1 = Yus.get_password("New Password for #{name}: ")
+  pass2 = Yus.get_password("Repeat Password for #{name}: ")
+
+  if(pass1 != pass2)
+    puts "Passwords did not match"
+    cont.call
+  end
+
+  session.set_password(name, pass1.to_s)
+else
+
+  options = Yus.default_opts
+  parser = Yus.default_parser(options)
+  parser.banner = "Usage: yus_passwd <username>"
+
+  parser.parse!(into: options)
+  unless (name = ARGV.first)
+    puts parser.help
+    exit(1)
+  end
+
+  session = Yus.session(options)
+  pass1 = Yus.get_password("New Password for #{name}: ")
+  pass2 = Yus.get_password("Repeat Password for #{name}: ")
+  unless (pass1.eql?(pass2))
+    puts "Passwords did not match"
+    exit(2)
+  end
+  session.set_password(name, pass1.to_s)
 end
 
-session = Yus.session(opts)
-
-pass1 = Yus.get_password("New Password for #{name}: ")
-pass2 = Yus.get_password("Repeat Password for #{name}: ")
-
-if(pass1 != pass2)
-  puts "Passwords did not match"
-  cont.call
-end
-
-session.set_password(name, pass1.to_s)
