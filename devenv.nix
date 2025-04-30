@@ -39,8 +39,14 @@ in {
     bundle install
   '';
 
+  enterTest = ''
+    ruby --version
+    psql --version
+    bundle exec rake test
+  '';
+
   languages.ruby.enable = true;
-  languages.ruby.version = "3.4";
+#  languages.ruby.version = "3.4";
   services.postgres = {
     enable = true;
     package = pkgs.postgresql_17;

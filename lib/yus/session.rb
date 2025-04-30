@@ -97,7 +97,7 @@ module Yus
     end
 
     def expired?
-      Time.now > (@last_access + @timeout.to_i)
+      Time.now > (@last_access + @timeout.to_i) + 1
     end
 
     def entities
@@ -166,7 +166,7 @@ module Yus
         allow_or_fail("set_password", name)
         user = find_or_fail(name)
         cmd = "#{@needle.config.digest}.hexdigest '#{pass}'"
-        user.passhash = Server.class_eval(cmd)
+        user.passhash = Session.class_eval(cmd)
         save(user)
       }
       touch!
@@ -237,7 +237,7 @@ module Yus
         entity.grant("set_password", name)
         if pass
           cmd = "#{@needle.config.digest}.hexdigest '#{pass}'"
-          entity.passhash = Server.class_eval(cmd)
+          entity.passhash = Session.class_eval(cmd)
         end
         @needle.persistence.add_entity(entity)
       }
@@ -288,7 +288,7 @@ module Yus
           raise NotPrivilegedError, "You are not privileged to reset #{name}'s password"
         end
         cmd = "#{@needle.config.digest}.hexdigest '#{password}'"
-        user.passhash = Server.class_eval(cmd)
+        user.passhash = Session.class_eval(cmd)
         user.revoke("reset_password", token)
         save(user)
       }
@@ -337,7 +337,7 @@ module Yus
 
     def generate_token
       cmd = "#{@needle.config.digest}.hexdigest '#{rand(2**128).to_s}'"
-      token  = Server.class_eval(cmd)
+      token  = Session.class_eval(cmd)
       expires = Time.now + @needle.config.token_lifetime.to_i * 24 * 60 * 60
       @user.set_token token, expires
       save @user

@@ -67,5 +67,7 @@ commands_that_show_work = [
   'echo 1234 | bundle exec bin/yus_dump test.yml',
   'echo 1234\n1234 | bundle exec bin/yus_grant info@desitin.ch grant reader2 --revoke',
   'echo 1234\n5678\n5678 | bundle exec bin/yus_add_user -v test@test.com', # fails PG unique
+  'echo 1234 | bundle exec bin/yus_delete_user info@desitin.ch'
+
 # bin/yusd -c /opt/src/yus/test/data/yus.yml
 # bin/yus_add_user -c /opt/src/yus/test/data/yus.yml -r admin
